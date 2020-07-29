@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Ирина](https://up.htmlacademy.ru/ecmascript/12/user/578047).
-* Наставник: `Неизвестно`.
+* Наставник: `без наставника`
 
 ---
 
