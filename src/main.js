@@ -7,11 +7,14 @@ import {createSortTemplate} from "./view/sort.js";
 import {createEventEditTemplate} from "./view/event-edit.js";
 import {createDaysTemplate} from "./view/days.js";
 import {createDayTemplate} from "./view/day.js";
-import {createDayInfoTemplate} from "./view/day-info.js";
-import {createDayEventsListTemplate} from "./view/day-events-list.js";
-import {createEventItemTemplate} from "./view/day-event-item.js";
+// import {createEventItemTemplate} from "./view/event-item.js";
+import {generateEvent} from "./mock/event.js";
+import {getInfoDateFormat} from "./utils/format-date.js";
+import {sortTripDays} from "./utils/utils.js";
 
-const EVENTS_COUNT = 3;
+const EVENTS_COUNT = 10;
+const event = generateEvent();
+const events = new Array(EVENTS_COUNT).fill().map(generateEvent);
 
 const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
@@ -38,21 +41,39 @@ const pageMainElement = document.querySelector(`.page-main`);
 const tripEventsElement = pageMainElement.querySelector(`.trip-events`);
 
 render(tripEventsElement, createSortTemplate(), `beforeend`);
-render(tripEventsElement, createEventEditTemplate(), `beforeend`);
+render(tripEventsElement, createEventEditTemplate(event), `beforeend`);
 render(tripEventsElement, createDaysTemplate(), `beforeend`);
 
 const tripDaysElement = tripEventsElement.querySelector(`.trip-days`);
 
+const infoDatesGroup = new Set(sortTripDays(events).map((item) => getInfoDateFormat(item.startTime)));
 
-render(tripDaysElement, createDayTemplate(), `beforeend`);
+const groupByDay = (allEvents, criteria) => {
+  const dayGroup = {};
+  const dayEvents = [];
+  allEvents.map((item) => {
+    if (getInfoDateFormat(item.startTime) === criteria) {
 
-const dayElement = tripEventsElement.querySelector(`.day`);
+      dayEvents.push(item);
+    }
+    dayGroup[criteria] = dayEvents;
+  });
 
-render(dayElement, createDayInfoTemplate(), `beforeend`);
-render(dayElement, createDayEventsListTemplate(), `beforeend`);
+  return dayGroup;
+};
 
-const tripEventsList = dayElement.querySelector(`.trip-events__list`);
+const groupByDays = (dates) => {
+  let groups = [];
+  for (let date of dates) {
+    groups.push(groupByDay(events, date));
+  }
+  return groups;
+};
 
-for (let i = 0; i < EVENTS_COUNT; i++) {
-  render(tripEventsList, createEventItemTemplate(), `beforeend`);
-}
+groupByDays(infoDatesGroup).forEach((item, i) => {
+  let date = Object.keys(item)[0];
+
+  let eventsDay = Object.values(item)[0];
+  // console.log(Object.values(item)[0])
+  render(tripDaysElement, createDayTemplate(date, i + 1, eventsDay), `beforeend`);
+});
